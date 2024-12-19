@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشغيل فيديوهات متزامنة</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+            background-color: red; /* خلفية حمراء */
+            color: white; /* لون النص */
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .video-container {
+            display: flex;
+            flex-direction: column; /* عرض الفيديوهات في عمود */
+            align-items: center;
+            gap: 20px; /* المسافة بين الفيديوهات */
+        }
+        video, iframe {
+            width: 100%;
+            max-width: 560px; /* يمكنك تعديل الحجم حسب الحاجة */
+            margin: 10px 0;
+        }
+        img {
+            max-width: 10%; /* تأكد من تناسب الصورة مع الشاشة */
+            height: auto; /* الحفاظ على النسبة */
+            margin-bottom: 20px; /* مسافة بين الصورة والعنوان */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- إضافة صورة محلية -->
+    <img src="logo.jpg" alt="وصف الصورة">
+
+    <h1>مسلسل حكاية حورية الحلقة 10</h1>
+
+    <div class="video-container">
+        <!-- فيديو MP4 في الأعلى -->
+        <video id="mp4Video" controls autoplay muted>
+            <source src="https://firebasestorage.googleapis.com/v0/b/project-2815293220407416835.appspot.com/o/10.12%2Fasali%20S01E15.mp4?alt=media&token=90170d89-80fe-41dc-8fa7-49d711a35e9d" type="video/mp4">
+            متصفحك لا يدعم تشغيل الفيديو.
+        </video>
+
+        <!-- تكرار فيديو يوتيوب -->
+        <div class="youtube-videos">
+            <<iframe id="youtubeVideo1" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1&autoplay=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe id="youtubeVideo1" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1&autoplay=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>            <iframe id="youtubeVideo3" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe id="youtubeVideo1" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1&autoplay=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>            <iframe id="youtubeVideo5" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe id="youtubeVideo1" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1&autoplay=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>            <iframe id="youtubeVideo7" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe id="youtubeVideo1" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1&autoplay=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>            <iframe id="youtubeVideo9" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe id="youtubeVideo1" src="https://www.youtube.com/embed/cPmlSbU-HsE?enablejsapi=1&autoplay=1" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>        </div>
+    </div>
+
+    <script>
+        const youtubeVideos = document.querySelectorAll('iframe[id^="youtubeVideo"]');
+        const mp4Video = document.getElementById('mp4Video');
+
+        // إضافة listener لتشغيل الفيديوهات معًا
+        mp4Video.addEventListener('play', () => {
+            youtubeVideos.forEach(video => {
+                video.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            });
+        });
+
+        mp4Video.addEventListener('pause', () => {
+            youtubeVideos.forEach(video => {
+                video.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            });
+        });
+
+        window.addEventListener("message", function(event) {
+            if (event.origin === "https://www.youtube.com") {
+                if (event.data && event.data.event === "onStateChange") {
+                    // تحقق من الحالة
+                    if (event.data.info === 0) { // 0 يعني أن الفيديو قد انتهى
+                        mp4Video.pause();
+                    }
+                }
+            }
+        });
+
+        // تشغيل الفيديو MP4 عند تشغيل الفيديو من يوتيوب
+        function onYouTubePlayerAPIReady() {
+            youtubeVideos.forEach((video) => {
+                const player = new YT.Player(video.id, {
+                    events: {
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                mp4Video.play();
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                mp4Video.pause();
+            }
+        }
+    </script>
+
+    <script src="https://www.youtube.com/iframe_api"></script> <!-- إضافة مكتبة يوتيوب API -->
+
+</body>
+</html>
